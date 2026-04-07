@@ -368,13 +368,17 @@
                         timestamp: new Date().toISOString()
                     };
                     
-                    await fetch(webhookUrl, {
+                    const response = await fetch(webhookUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(payload)
                     });
+                    
+                    if (!response.ok) {
+                        throw new Error('Upload failed');
+                    }
                     
                     // Show success
                     uploadProgress.classList.remove('show');
