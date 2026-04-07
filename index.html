@@ -169,6 +169,56 @@
         input[type="file"] {
             display: none;
         }
+        
+        .email-field {
+            margin-bottom: 25px;
+        }
+        
+        .email-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0b0;
+        }
+        
+        .email-field input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #4a4a6a;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 1rem;
+        }
+        
+        .email-field input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        
+        .upload-progress {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .upload-progress.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #00d4ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -179,6 +229,11 @@
         </header>
         
         <div class="upload-section" id="uploadSection">
+            <div class="email-field">
+                <label for="email">📧 Your email address (so we can send you the resume)</label>
+                <input type="email" id="email" placeholder="you@example.com" required>
+            </div>
+            
             <div class="drop-zone" id="dropZone">
                 <div class="icon">📁</div>
                 <p>Drag & drop your audio file here</p>
@@ -193,6 +248,11 @@
             </div>
             
             <button class="upload-btn" id="uploadBtn" disabled>Submit Audio</button>
+        </div>
+        
+        <div class="upload-progress" id="uploadProgress">
+            <div class="spinner"></div>
+            <p>Uploading your audio...</p>
         </div>
         
         <div class="success-message" id="successMessage">
@@ -220,6 +280,8 @@
         const uploadBtn = document.getElementById('uploadBtn');
         const uploadSection = document.getElementById('uploadSection');
         const successMessage = document.getElementById('successMessage');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const emailInput = document.getElementById('email');
         
         let selectedFile = null;
         
@@ -257,44 +319,68 @@
             selectedFile = file;
             fileName.textContent = file.name;
             fileInfo.classList.add('show');
-            uploadBtn.disabled = false;
+            checkReady();
         }
         
         // Remove file
         removeFile.addEventListener('click', () => {
             selectedFile = null;
             fileInfo.classList.remove('show');
-            uploadBtn.disabled = true;
+            checkReady();
             fileInput.value = '';
         });
+        
+        function checkReady() {
+            const email = emailInput.value.trim();
+            uploadBtn.disabled = !(selectedFile && email.includes('@'));
+        }
+        
+        emailInput.addEventListener('input', checkReady);
         
         // Upload
         uploadBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
             
-            uploadBtn.textContent = 'Uploading...';
-            uploadBtn.disabled = true;
+            const email = emailInput.value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
             
-            // Create form data
-            const formData = new FormData();
-            formData.append('audio', selectedFile);
-            formData.append('timestamp', new Date().toISOString());
+            uploadSection.style.display = 'none';
+            uploadProgress.classList.add('show');
             
             try {
-                // Upload to Google Drive via Make.com webhook
-                // For now, we'll use a simple form submission
-                // You can replace this with your actual endpoint
-                
-                alert('Audio uploaded! Check your email for the next steps.');
-                
-                // Show success
-                uploadSection.style.display = 'none';
-                successMessage.classList.add('show');
+                // Convert file to base64
+                const reader = new FileReader();
+                reader.onload = async function() {
+                    const base64 = reader.result.split(',')[1];
+                    const fileType = selectedFile.type;
+                    
+                    // Send to Make.com webhook
+                    // REPLACE THIS URL with your actual Make.com webhook URL
+                    const webhookUrl = 'https://hook.us2.make.com/YOUR_WEBHOOK_ID';
+                    
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    formData.append('filename', selectedFile.name);
+                    formData.append('fileType', fileType);
+                    formData.append('fileContent', base64);
+                    formData.append('timestamp', new Date().toISOString());
+                    
+                    // For now, simulate upload since we don't have webhook yet
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Show success
+                    uploadProgress.classList.remove('show');
+                    successMessage.classList.add('show');
+                };
+                reader.readAsDataURL(selectedFile);
                 
             } catch (error) {
                 alert('Upload failed. Please try again.');
-                uploadBtn.textContent = 'Submit Audio';
-                uploadBtn.disabled = false;
+                uploadProgress.classList.remove('show');
+                uploadSection.style.display = 'block';
             }
         });
     </script>
