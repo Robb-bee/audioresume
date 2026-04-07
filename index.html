@@ -350,57 +350,61 @@
             uploadSection.style.display = 'none';
             uploadProgress.classList.add('show');
             
-            try {
-                // Convert file to base64
-                const reader = new FileReader();
-                reader.onload = async function() {
-                    const base64 = reader.result.split(',')[1];
-                    const fileType = selectedFile.type;
-                    
-                    // Send to Make.com webhook
-                    const webhookUrl = 'https://hook.us2.make.com/i3x3iq0a1xwr07bun8y37jjb6irhupfv';
-                    
-                    const payload = {
-                        email: email,
-                        filename: selectedFile.name,
-                        fileType: fileType,
-                        fileContent: base64,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 30000);
-                    
-                    try {
-                        const response = await fetch(webhookUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(payload),
-                            signal: controller.signal
-                        });
-                        clearTimeout(timeoutId);
-                        
-                        if (!response.ok) {
-                            throw new Error('Upload failed');
-                        }
-                    } catch (err) {
-                        clearTimeout(timeoutId);
-                        throw err;
-                    }
-                    
-                    // Show success
-                    uploadProgress.classList.remove('show');
-                    successMessage.classList.add('show');
-                };
-                reader.readAsDataURL(selectedFile);
+            // Convert file to base64
+            const reader = new FileReader();
+            reader.onload = function() {
+                const base64 = reader.result.split(',')[1];
+                const fileType = selectedFile.type;
                 
-            } catch (error) {
-                alert('Upload failed. Please try again.');
+                const webhookUrl = 'https://hook.us2.make.com/i3x3iq0a1xwr07bun8y37jjb6irhupfv';
+                
+                const payload = JSON.stringify({
+                    email: email,
+                    filename: selectedFile.name,
+                    fileType: fileType,
+                    fileContent: base64,
+                    timestamp: new Date().toISOString()
+                });
+                
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', webhookUrl, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.timeout = 30000;
+                
+                xhr.onload = function() {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        uploadProgress.classList.remove('show');
+                        successMessage.classList.add('show');
+                    } else {
+                        alert('Upload failed: ' + xhr.status);
+                        uploadProgress.classList.remove('show');
+                        uploadSection.style.display = 'block';
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    alert('Upload failed. Please try again.');
+                    uploadProgress.classList.remove('show');
+                    uploadSection.style.display = 'block';
+                };
+                
+                xhr.ontimeout = function() {
+                    alert('Upload timed out. Please try a smaller file.');
+                    uploadProgress.classList.remove('show');
+                    uploadSection.style.display = 'block';
+                };
+                
+                xhr.send(payload);
+            };
+            
+            reader.onerror = function() {
+                alert('Failed to read file.');
                 uploadProgress.classList.remove('show');
                 uploadSection.style.display = 'block';
-            }
+            };
+            
+            reader.readAsDataURL(selectedFile);
         });
     </script>
 </body>
