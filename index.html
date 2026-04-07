@@ -358,18 +358,23 @@
                     const fileType = selectedFile.type;
                     
                     // Send to Make.com webhook
-                    // REPLACE THIS URL with your actual Make.com webhook URL
                     const webhookUrl = 'https://hook.us2.make.com/i3x3iq0a1xwr07bun8y37jjb6irhupfv';
                     
-                    const formData = new FormData();
-                    formData.append('email', email);
-                    formData.append('filename', selectedFile.name);
-                    formData.append('fileType', fileType);
-                    formData.append('fileContent', base64);
-                    formData.append('timestamp', new Date().toISOString());
+                    const payload = {
+                        email: email,
+                        filename: selectedFile.name,
+                        fileType: fileType,
+                        fileContent: base64,
+                        timestamp: new Date().toISOString()
+                    };
                     
-                    // For now, simulate upload since we don't have webhook yet
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
                     
                     // Show success
                     uploadProgress.classList.remove('show');
