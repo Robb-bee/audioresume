@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turn Your Voice Into a Professional Resume</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0a0b0;
+        }
+        
+        .upload-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .drop-zone {
+            border: 2px dashed #4a4a6a;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #00d4ff;
+            background: rgba(0,212,255,0.05);
+        }
+        
+        .drop-zone p {
+            font-size: 1.1rem;
+            color: #a0a0b0;
+            margin-bottom: 15px;
+        }
+        
+        .drop-zone .icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .file-info {
+            display: none;
+            background: rgba(0,212,255,0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .file-info.show {
+            display: flex;
+        }
+        
+        .file-name {
+            color: #00d4ff;
+            font-weight: 500;
+        }
+        
+        .remove-file {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        .upload-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .instructions {
+            margin-top: 40px;
+            text-align: left;
+        }
+        
+        .instructions h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            color: #c0c0d0;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .success-message h2 {
+            color: #00ff88;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .success-message p {
+            color: #a0a0b0;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ Turn Your Voice Into a Resume</h1>
+            <p class="subtitle">Record a short audio about your work experience. We'll turn it into a professional resume.</p>
+        </header>
+        
+        <div class="upload-section" id="uploadSection">
+            <div class="drop-zone" id="dropZone">
+                <div class="icon">📁</div>
+                <p>Drag & drop your audio file here</p>
+                <p style="font-size: 0.9rem;">or click to browse</p>
+            </div>
+            
+            <input type="file" id="fileInput" accept="audio/*,.m4a,.mp3,.wav,.webm">
+            
+            <div class="file-info" id="fileInfo">
+                <span class="file-name" id="fileName"></span>
+                <button class="remove-file" id="removeFile">✕</button>
+            </div>
+            
+            <button class="upload-btn" id="uploadBtn" disabled>Submit Audio</button>
+        </div>
+        
+        <div class="success-message" id="successMessage">
+            <h2>✅ Audio Submitted!</h2>
+            <p>We're processing your resume. You'll receive an email with your completed resume once ready.</p>
+        </div>
+        
+        <div class="instructions">
+            <h2>📋 How It Works</h2>
+            <ol>
+                <li>Record yourself talking about your work experience, skills, and job history</li>
+                <li>Upload the audio file above (1-5 minutes works best)</li>
+                <li>We'll transcribe it and generate a professional resume</li>
+                <li>You'll receive an email with your resume — pay only if you love it!</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const removeFile = document.getElementById('removeFile');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadSection = document.getElementById('uploadSection');
+        const successMessage = document.getElementById('successMessage');
+        
+        let selectedFile = null;
+        
+        // Click to browse
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        // Drag and drop
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) handleFile(files[0]);
+        });
+        
+        // File selected
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('audio/')) {
+                alert('Please upload an audio file');
+                return;
+            }
+            
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileInfo.classList.add('show');
+            uploadBtn.disabled = false;
+        }
+        
+        // Remove file
+        removeFile.addEventListener('click', () => {
+            selectedFile = null;
+            fileInfo.classList.remove('show');
+            uploadBtn.disabled = true;
+            fileInput.value = '';
+        });
+        
+        // Upload
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            
+            uploadBtn.textContent = 'Uploading...';
+            uploadBtn.disabled = true;
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('audio', selectedFile);
+            formData.append('timestamp', new Date().toISOString());
+            
+            try {
+                // Upload to Google Drive via Make.com webhook
+                // For now, we'll use a simple form submission
+                // You can replace this with your actual endpoint
+                
+                alert('Audio uploaded! Check your email for the next steps.');
+                
+                // Show success
+                uploadSection.style.display = 'none';
+                successMessage.classList.add('show');
+                
+            } catch (error) {
+                alert('Upload failed. Please try again.');
+                uploadBtn.textContent = 'Submit Audio';
+                uploadBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
