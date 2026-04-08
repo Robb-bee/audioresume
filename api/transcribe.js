@@ -35,7 +35,8 @@ export default async function handler(req, res) {
     
     // Download the file from file.io
     const fileResponse = await fetch(fileUrl);
-    const fileBuffer = await fileResponse.buffer();
+    const arrayBuffer = await fileResponse.arrayBuffer();
+    const fileBuffer = Buffer.from(arrayBuffer);
     
     console.log('File downloaded, size:', fileBuffer.length);
     
