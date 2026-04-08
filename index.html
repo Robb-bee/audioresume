@@ -189,7 +189,7 @@
             if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
         };
         
-        // Upload - directly to file.io (bypasses Vercel size limit)
+        // Upload - directly to catbox (bypasses Vercel size limit)
         uploadBtn.onclick = async () => {
             if (!selectedFile) return;
             
@@ -204,22 +204,23 @@
             uploadProgress.querySelector('p').textContent = 'Uploading audio...';
             
             try {
-                // Upload directly to file.io (bypasses Vercel)
+                // Upload directly to catbox.moe (supports CORS, no size limit)
                 const formData = new FormData();
-                formData.append('file', selectedFile);
+                formData.append('reqtype', 'fileupload');
+                formData.append('fileToUpload', selectedFile);
                 
-                const uploadResponse = await fetch('https://file.io', {
+                const uploadResponse = await fetch('https://catbox.moe/user/api.php', {
                     method: 'POST',
                     body: formData
                 });
                 
-                const uploadResult = await uploadResponse.json();
+                const fileUrl = await uploadResponse.text();
+                fileUrl = fileUrl.trim();
                 
-                if (!uploadResult.success) {
+                if (!fileUrl.startsWith('http')) {
                     throw new Error('Upload to storage failed');
                 }
                 
-                const fileUrl = uploadResult.file.url;
                 console.log('File uploaded to:', fileUrl);
                 
                 // Now trigger transcription via our API
