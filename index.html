@@ -189,7 +189,7 @@
             if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
         };
         
-        // Upload
+        // Upload - streams directly to ElevenLabs
         uploadBtn.onclick = async () => {
             if (!selectedFile) return;
             
@@ -201,38 +201,33 @@
             
             uploadSection.style.display = 'none';
             uploadProgress.classList.add('show');
+            uploadProgress.querySelector('p').textContent = 'Transcribing audio...';
             
-            const reader = new FileReader();
-            reader.onload = async function() {
-                const base64 = reader.result.split(',')[1];
+            // Use FormData to stream file
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('email', email);
+            
+            try {
+                const response = await fetch('/api/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
                 
-                try {
-                    const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            email: email,
-                            filename: selectedFile.name,
-                            fileContent: base64,
-                            fileType: selectedFile.type
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        uploadProgress.classList.remove('show');
-                        successMessage.classList.add('show');
-                    } else {
-                        throw new Error(result.error);
-                    }
-                } catch (err) {
-                    alert('Upload failed: ' + err.message);
+                const result = await response.json();
+                
+                if (result.success) {
                     uploadProgress.classList.remove('show');
-                    uploadSection.style.display = 'block';
+                    successMessage.classList.add('show');
+                    console.log('Transcript:', result.transcript);
+                } else {
+                    throw new Error(result.error || 'Transcription failed');
                 }
-            };
-            reader.readAsDataURL(selectedFile);
+            } catch (err) {
+                alert('Upload failed: ' + err.message);
+                uploadProgress.classList.remove('show');
+                uploadSection.style.display = 'block';
+            }
         };
     </script>
 </body>
