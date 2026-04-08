@@ -7,7 +7,6 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  // Set CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -24,23 +23,38 @@ export default async function handler(req, res) {
     const apiKey = process.env.ELEVENLABS_API_KEY;
     
     if (!apiKey) {
-      return res.status(500).json({ error: 'Server configuration error' });
+      console.log('Missing API key - env vars:', Object.keys(process.env).filter(k => k.includes('ELEVEN')));
+      return res.status(500).json({ error: 'Server configuration error - missing API key' });
     }
 
-    // Collect the body manually (streaming)
-    const chunks = [];
-    for await (const chunk of req.body) {
-      chunks.push(chunk);
-    }
-    const bodyBuffer = Buffer.concat(chunks);
+    // Read the file from FormData - handle both stream and buffer
+    let fileBuffer;
     
-    console.log('Received audio file, size:', bodyBuffer.length, 'bytes');
+    if (req.body && typeof req.body.on === 'function') {
+      // It's a stream - collect all chunks
+      const chunks = [];
+      for await (const chunk of req.body) {
+        chunks.push(chunk);
+      }
+      fileBuffer = Buffer.concat(chunks);
+    } else if (req.body) {
+      // Already parsed buffer
+      fileBuffer = Buffer.from(req.body);
+    } else {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    console.log('File size:', fileBuffer.length);
+    
+    if (fileBuffer.length === 0) {
+      return res.status(400).json({ error: 'Empty file' });
+    }
 
-    // Send to ElevenLabs API
+    // Create FormData for ElevenLabs
     const formData = new FormData();
-    formData.append('file', new Blob([bodyBuffer]), 'audio.m4a');
+    const blob = new Blob([fileBuffer], { type: 'audio/m4a' });
+    formData.append('file', blob, 'audio.m4a');
     formData.append('model', 'scribe_multilingual');
-    formData.append('language', 'en');
 
     const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
@@ -50,15 +64,15 @@ export default async function handler(req, res) {
       body: formData,
     });
 
+    const responseText = await response.text();
+    
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('ElevenLabs error:', response.status, errorText);
-      return res.status(500).json({ error: 'Transcription failed' });
+      console.error('ElevenLabs error:', response.status, responseText);
+      return res.status(500).json({ error: 'Transcription service unavailable' });
     }
 
-    const result = await response.json();
-    console.log('Transcription successful');
-
+    const result = JSON.parse(responseText);
+    
     res.status(200).json({
       success: true,
       transcript: result.text || result.content || 'Transcription complete'
