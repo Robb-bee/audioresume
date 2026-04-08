@@ -43,7 +43,7 @@
             color: #a0a0b0;
         }
         
-        .upload-section {
+        .form-section {
             background: rgba(255,255,255,0.05);
             border-radius: 20px;
             padding: 40px;
@@ -51,79 +51,35 @@
             backdrop-filter: blur(10px);
         }
         
-        .drop-zone {
-            border: 2px dashed #4a4a6a;
-            border-radius: 15px;
-            padding: 60px 40px;
+        .form-link {
             text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            margin-bottom: 30px;
+            padding: 40px;
         }
         
-        .drop-zone:hover, .drop-zone.dragover {
-            border-color: #00d4ff;
-            background: rgba(0,212,255,0.05);
-        }
-        
-        .drop-zone p {
-            font-size: 1.1rem;
-            color: #a0a0b0;
-            margin-bottom: 15px;
-        }
-        
-        .drop-zone .icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-        
-        .file-info {
-            display: none;
-            background: rgba(0,212,255,0.1);
-            padding: 15px 20px;
-            border-radius: 10px;
+        .form-link h2 {
             margin-bottom: 20px;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .file-info.show {
-            display: flex;
-        }
-        
-        .file-name {
             color: #00d4ff;
-            font-weight: 500;
         }
         
-        .remove-file {
-            background: none;
-            border: none;
-            color: #ff6b6b;
-            cursor: pointer;
-            font-size: 1.2rem;
+        .form-link p {
+            margin-bottom: 30px;
+            color: #a0a0b0;
         }
         
-        .upload-btn {
-            width: 100%;
-            padding: 18px;
+        .form-btn {
+            display: inline-block;
+            padding: 18px 40px;
             background: linear-gradient(90deg, #00d4ff, #7c3aed);
-            border: none;
             border-radius: 12px;
             color: #fff;
             font-size: 1.1rem;
             font-weight: 600;
-            cursor: pointer;
+            text-decoration: none;
             transition: transform 0.2s ease;
         }
         
-        .upload-btn:hover {
+        .form-btn:hover {
             transform: translateY(-2px);
-        }
-        
-        .upload-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
         }
         
         .instructions {
@@ -146,54 +102,22 @@
             margin-bottom: 10px;
         }
         
-        .success-message {
-            display: none;
-            text-align: center;
-            padding: 40px;
+        .note {
+            background: rgba(255,165,0,0.1);
+            border: 1px solid orange;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
         }
         
-        .success-message.show {
-            display: block;
+        .note h3 {
+            color: orange;
+            margin-bottom: 10px;
         }
         
-        .success-message h2 {
-            color: #00ff88;
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-        }
-        
-        .success-message p {
-            color: #a0a0b0;
-        }
-        
-        input[type="file"] {
-            display: none;
-        }
-        
-        .email-field {
-            margin-bottom: 20px;
-        }
-        
-        .email-field label {
-            display: block;
-            margin-bottom: 8px;
-            color: #a0a0b0;
+        .note p {
+            color: #ccc;
             font-size: 0.95rem;
-        }
-        
-        .email-field input {
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid #4a4a6a;
-            background: rgba(255,255,255,0.05);
-            color: #fff;
-            font-size: 1rem;
-        }
-        
-        .email-field input:focus {
-            outline: none;
-            border-color: #00d4ff;
         }
     </style>
 </head>
@@ -204,152 +128,31 @@
             <p class="subtitle">Record a short audio about your work experience. We'll turn it into a professional resume.</p>
         </header>
         
-        <div class="upload-section" id="uploadSection">
-            <div class="email-field">
-                <label for="email">📧 Your email (for resume delivery)</label>
-                <input type="email" id="email" placeholder="you@example.com">
+        <div class="form-section">
+            <div class="form-link">
+                <h2>📝 Submit Your Audio</h2>
+                <p>Click the button below to open our submission form.<br>Upload your recorded audio and we'll handle the rest!</p>
+                
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOz6ASjTBlIFhtyO0tQph6eC0-2y3TfVy20fGsmdvaEyBO7Q/viewform" target="_blank" class="form-btn">
+                    📋 Open Submission Form
+                </a>
             </div>
             
-            <div class="drop-zone" id="dropZone">
-                <div class="icon">📁</div>
-                <p>Drag & drop your audio file here</p>
-                <p style="font-size: 0.9rem;">or click to browse</p>
+            <div class="note">
+                <h3>⚠️ Important</h3>
+                <p>After you submit your audio, you'll receive an email with your completed resume within 24 hours. Payment is only required if you're satisfied with the result.</p>
             </div>
-            
-            <input type="file" id="fileInput" accept="audio/*,.m4a,.mp3,.wav,.webm">
-            
-            <div class="file-info" id="fileInfo">
-                <span class="file-name" id="fileName"></span>
-                <button class="remove-file" id="removeFile">✕</button>
-            </div>
-            
-            <button class="upload-btn" id="uploadBtn" disabled>Submit Audio</button>
-        </div>
-        
-        <div class="success-message" id="successMessage">
-            <h2>✅ Audio Submitted!</h2>
-            <p>We're processing your resume. You'll receive an email with your completed resume once ready.</p>
         </div>
         
         <div class="instructions">
             <h2>📋 How It Works</h2>
             <ol>
-                <li>Record yourself talking about your work experience, skills, and job history</li>
-                <li>Upload the audio file above (1-5 minutes works best)</li>
+                <li>Record yourself talking about your work experience, skills, and job history (1-5 minutes works best)</li>
+                <li>Upload the audio file using our submission form</li>
                 <li>We'll transcribe it and generate a professional resume</li>
                 <li>You'll receive an email with your resume — pay only if you love it!</li>
             </ol>
         </div>
     </div>
-    
-    <script>
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const removeFile = document.getElementById('removeFile');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const uploadSection = document.getElementById('uploadSection');
-        const successMessage = document.getElementById('successMessage');
-        
-        let selectedFile = null;
-        
-        // Click to browse
-        dropZone.addEventListener('click', () => fileInput.click());
-        
-        // Drag and drop
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('dragover');
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('dragover');
-        });
-        
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) handleFile(files[0]);
-        });
-        
-        // File selected
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) handleFile(e.target.files[0]);
-        });
-        
-        function handleFile(file) {
-            if (!file.type.startsWith('audio/')) {
-                alert('Please upload an audio file');
-                return;
-            }
-            
-            selectedFile = file;
-            fileName.textContent = file.name;
-            fileInfo.classList.add('show');
-            uploadBtn.disabled = false;
-        }
-        
-        // Remove file
-        removeFile.addEventListener('click', () => {
-            selectedFile = null;
-            fileInfo.classList.remove('show');
-            uploadBtn.disabled = true;
-            fileInput.value = '';
-        });
-        
-        // Upload
-        uploadBtn.addEventListener('click', async () => {
-            if (!selectedFile) return;
-            
-            const emailInput = document.getElementById('email');
-            const email = emailInput.value.trim();
-            
-            if (!email || !email.includes('@')) {
-                alert('Please enter your email address');
-                return;
-            }
-            
-            uploadBtn.textContent = 'Uploading...';
-            uploadBtn.disabled = true;
-            
-            // Read file as base64
-            const reader = new FileReader();
-            reader.onload = async function() {
-                const base64 = reader.result.split(',')[1];
-                
-                try {
-                    const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            email: email,
-                            filename: selectedFile.name,
-                            fileContent: base64,
-                            fileType: selectedFile.type,
-                        }),
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        alert('Audio uploaded! Check your email for the next steps.');
-                        uploadSection.style.display = 'none';
-                        successMessage.classList.add('show');
-                    } else {
-                        throw new Error(result.error || 'Upload failed');
-                    }
-                } catch (error) {
-                    alert('Upload failed. Please try again.');
-                    uploadBtn.textContent = 'Submit Audio';
-                    uploadBtn.disabled = false;
-                }
-            };
-            reader.readAsDataURL(selectedFile);
-        });
-    </script>
 </body>
 </html>
