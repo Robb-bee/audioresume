@@ -1,5 +1,4 @@
-// Vercel Serverless - Get file from URL, send to ElevenLabs
-
+// Fetch audio from R2, send to ElevenLabs
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -14,13 +13,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Parse JSON body
     const { fileUrl, email } = req.body || {};
     const apiKey = process.env.ELEVENLABS_API_KEY;
     
-    console.log('Request body:', req.body);
+    console.log('Received request:', { fileUrl, email });
     
     if (!apiKey) {
-      return res.status(500).json({ error: 'Server configuration error - missing API key' });
+      return res.status(500).json({ error: 'Server configuration error' });
     }
     
     if (!fileUrl) {
@@ -29,12 +29,17 @@ export default async function handler(req, res) {
 
     console.log('Fetching file from:', fileUrl);
     
-    // Download the file
+    // Fetch the file from R2
     const fileResponse = await fetch(fileUrl);
+    
+    if (!fileResponse.ok) {
+      throw new Error(`Failed to fetch file: ${fileResponse.status}`);
+    }
+    
     const arrayBuffer = await fileResponse.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
     
-    console.log('File downloaded, size:', fileBuffer.length);
+    console.log('File downloaded, size:', fileBuffer.length, 'bytes');
     
     // Send to ElevenLabs
     const formData = new FormData();
@@ -42,6 +47,8 @@ export default async function handler(req, res) {
     formData.append('file', blob, 'audio.m4a');
     formData.append('model', 'scribe_multilingual');
 
+    console.log('Sending to ElevenLabs...');
+    
     const elevenResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
       headers: { 'xi-api-key': apiKey },
@@ -55,6 +62,8 @@ export default async function handler(req, res) {
     }
 
     const result = await elevenResponse.json();
+    
+    console.log('Transcription complete');
     
     res.status(200).json({
       success: true,
