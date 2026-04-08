@@ -1,0 +1,11 @@
+{
+  "name": "audioresume",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "googleapis": "^128.0.0"
+  }
+}

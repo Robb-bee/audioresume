@@ -192,6 +192,11 @@
                 <button class="remove-file" id="removeFile">✕</button>
             </div>
             
+            <div class="email-field">
+                <label for="email">📧 Your email (for resume delivery)</label>
+                <input type="email" id="email" placeholder="you@example.com">
+            </div>
+            
             <button class="upload-btn" id="uploadBtn" disabled>Submit Audio</button>
         </div>
         
@@ -272,30 +277,52 @@
         uploadBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
             
+            const emailInput = document.getElementById('email');
+            const email = emailInput.value.trim();
+            
+            if (!email || !email.includes('@')) {
+                alert('Please enter your email address');
+                return;
+            }
+            
             uploadBtn.textContent = 'Uploading...';
             uploadBtn.disabled = true;
             
-            // Create form data
-            const formData = new FormData();
-            formData.append('audio', selectedFile);
-            formData.append('timestamp', new Date().toISOString());
-            
-            try {
-                // Upload to Google Drive via Make.com webhook
-                // For now, we'll use a simple form submission
-                // You can replace this with your actual endpoint
+            // Read file as base64
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const base64 = reader.result.split(',')[1];
                 
-                alert('Audio uploaded! Check your email for the next steps.');
-                
-                // Show success
-                uploadSection.style.display = 'none';
-                successMessage.classList.add('show');
-                
-            } catch (error) {
-                alert('Upload failed. Please try again.');
-                uploadBtn.textContent = 'Submit Audio';
-                uploadBtn.disabled = false;
-            }
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            filename: selectedFile.name,
+                            fileContent: base64,
+                            fileType: selectedFile.type,
+                        }),
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('Audio uploaded! Check your email for the next steps.');
+                        uploadSection.style.display = 'none';
+                        successMessage.classList.add('show');
+                    } else {
+                        throw new Error(result.error || 'Upload failed');
+                    }
+                } catch (error) {
+                    alert('Upload failed. Please try again.');
+                    uploadBtn.textContent = 'Submit Audio';
+                    uploadBtn.disabled = false;
+                }
+            };
+            reader.readAsDataURL(selectedFile);
         });
     </script>
 </body>
