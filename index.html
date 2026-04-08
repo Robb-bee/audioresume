@@ -189,7 +189,7 @@
             if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
         };
         
-        // Upload - using Cloudflare R2 (bypasses Vercel size limit)
+        // Upload - to Google Drive via service account
         uploadBtn.onclick = async () => {
             if (!selectedFile) return;
             
@@ -201,41 +201,32 @@
             
             uploadSection.style.display = 'none';
             uploadProgress.classList.add('show');
-            uploadProgress.querySelector('p').textContent = 'Preparing upload...';
+            uploadProgress.querySelector('p').textContent = 'Uploading audio...';
             
             try {
-                // Step 1: Get pre-signed upload URL from our API
-                const urlResponse = await fetch('/api/get-upload-url', { method: 'GET' });
-                const { uploadUrl, publicUrl } = await urlResponse.json();
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('email', email);
                 
-                if (!uploadUrl) {
-                    throw new Error('Failed to get upload URL');
-                }
-                
-                uploadProgress.querySelector('p').textContent = 'Uploading audio...';
-                
-                // Step 2: Upload directly to R2 using signed URL
-                const uploadResponse = await fetch(uploadUrl, {
-                    method: 'PUT',
-                    body: selectedFile,
-                    headers: { 'Content-Type': 'audio/m4a' }
+                const response = await fetch('/api/upload-to-drive', {
+                    method: 'POST',
+                    body: formData
                 });
                 
-                if (!uploadResponse.ok) {
-                    throw new Error('Upload to storage failed');
+                const result = await response.json();
+                
+                if (result.success) {
+                    uploadProgress.classList.remove('show');
+                    successMessage.classList.add('show');
+                } else {
+                    throw new Error(result.error || 'Upload failed');
                 }
-                
-                console.log('File uploaded to:', publicUrl);
-                
-                // Step 3: Trigger transcription via our API
-                uploadProgress.querySelector('p').textContent = 'Transcribing...';
-                
-                const transcribeResponse = await fetch('/api/transcribe', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        fileUrl: publicUrl,
-                        email: email
+            } catch (err) {
+                alert('Upload failed: ' + err.message);
+                uploadProgress.classList.remove('show');
+                uploadSection.style.display = 'block';
+            }
+        };
                     })
                 });
                 
