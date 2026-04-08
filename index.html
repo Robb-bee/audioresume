@@ -205,6 +205,11 @@
         </header>
         
         <div class="upload-section" id="uploadSection">
+            <div class="email-field">
+                <label for="email">📧 Your email (for resume delivery)</label>
+                <input type="email" id="email" placeholder="you@example.com">
+            </div>
+            
             <div class="drop-zone" id="dropZone">
                 <div class="icon">📁</div>
                 <p>Drag & drop your audio file here</p>
@@ -216,11 +221,6 @@
             <div class="file-info" id="fileInfo">
                 <span class="file-name" id="fileName"></span>
                 <button class="remove-file" id="removeFile">✕</button>
-            </div>
-            
-            <div class="email-field">
-                <label for="email">📧 Your email (for resume delivery)</label>
-                <input type="email" id="email" placeholder="you@example.com">
             </div>
             
             <button class="upload-btn" id="uploadBtn" disabled>Submit Audio</button>
