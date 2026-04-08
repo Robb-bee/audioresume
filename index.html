@@ -189,7 +189,7 @@
             if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
         };
         
-        // Upload - streams directly to ElevenLabs
+        // Upload - directly to file.io (bypasses Vercel size limit)
         uploadBtn.onclick = async () => {
             if (!selectedFile) return;
             
@@ -201,20 +201,40 @@
             
             uploadSection.style.display = 'none';
             uploadProgress.classList.add('show');
-            uploadProgress.querySelector('p').textContent = 'Transcribing audio...';
-            
-            // Use FormData to stream file
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-            formData.append('email', email);
+            uploadProgress.querySelector('p').textContent = 'Uploading audio...';
             
             try {
-                const response = await fetch('/api/transcribe', {
+                // Upload directly to file.io (bypasses Vercel)
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                const uploadResponse = await fetch('https://file.io', {
                     method: 'POST',
                     body: formData
                 });
                 
-                const result = await response.json();
+                const uploadResult = await uploadResponse.json();
+                
+                if (!uploadResult.success) {
+                    throw new Error('Upload to storage failed');
+                }
+                
+                const fileUrl = uploadResult.file.url;
+                console.log('File uploaded to:', fileUrl);
+                
+                // Now trigger transcription via our API
+                uploadProgress.querySelector('p').textContent = 'Transcribing...';
+                
+                const transcribeResponse = await fetch('/api/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        fileUrl: fileUrl,
+                        email: email
+                    })
+                });
+                
+                const result = await transcribeResponse.json();
                 
                 if (result.success) {
                     uploadProgress.classList.remove('show');

@@ -1,8 +1,8 @@
-// Vercel Serverless - Stream audio directly to ElevenLabs
+// Vercel Serverless - Get file from URL, send to ElevenLabs
 
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: true,
   },
 };
 
@@ -20,43 +20,32 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { fileUrl, email } = req.body;
     const apiKey = process.env.ELEVENLABS_API_KEY;
     
     if (!apiKey) {
-      console.log('Missing API key - env vars:', Object.keys(process.env).filter(k => k.includes('ELEVEN')));
-      return res.status(500).json({ error: 'Server configuration error - missing API key' });
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+    
+    if (!fileUrl) {
+      return res.status(400).json({ error: 'Missing file URL' });
     }
 
-    // Read the file from FormData - handle both stream and buffer
-    let fileBuffer;
+    console.log('Fetching file from:', fileUrl);
     
-    if (req.body && typeof req.body.on === 'function') {
-      // It's a stream - collect all chunks
-      const chunks = [];
-      for await (const chunk of req.body) {
-        chunks.push(chunk);
-      }
-      fileBuffer = Buffer.concat(chunks);
-    } else if (req.body) {
-      // Already parsed buffer
-      fileBuffer = Buffer.from(req.body);
-    } else {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
+    // Download the file from file.io
+    const fileResponse = await fetch(fileUrl);
+    const fileBuffer = await fileResponse.buffer();
     
-    console.log('File size:', fileBuffer.length);
+    console.log('File downloaded, size:', fileBuffer.length);
     
-    if (fileBuffer.length === 0) {
-      return res.status(400).json({ error: 'Empty file' });
-    }
-
     // Create FormData for ElevenLabs
     const formData = new FormData();
     const blob = new Blob([fileBuffer], { type: 'audio/m4a' });
     formData.append('file', blob, 'audio.m4a');
     formData.append('model', 'scribe_multilingual');
 
-    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+    const elevenResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
       headers: {
         'xi-api-key': apiKey,
@@ -64,14 +53,13 @@ export default async function handler(req, res) {
       body: formData,
     });
 
-    const responseText = await response.text();
-    
-    if (!response.ok) {
-      console.error('ElevenLabs error:', response.status, responseText);
-      return res.status(500).json({ error: 'Transcription service unavailable' });
+    if (!elevenResponse.ok) {
+      const errorText = await elevenResponse.text();
+      console.error('ElevenLabs error:', errorText);
+      return res.status(500).json({ error: 'Transcription failed' });
     }
 
-    const result = JSON.parse(responseText);
+    const result = await elevenResponse.json();
     
     res.status(200).json({
       success: true,
