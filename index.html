@@ -3,237 +3,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turn Your Voice Into a Professional Resume</title>
+    <title>Turn Your Voice Into a Resume</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
             min-height: 100vh;
             color: #fff;
-            padding: 40px 20px;
+            line-height: 1.6;
         }
-        .container { max-width: 600px; margin: 0 auto; }
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+        
+        .hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #a855f7 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        .subtitle { color: #a0a0b0; margin-bottom: 30px; }
         
-        .upload-section {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
+        .hero .tagline {
+            font-size: 1.3rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            max-width: 1000px;
+            margin: 0 auto 50px;
+            padding: 0 20px;
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
             padding: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
         }
         
-        .field { margin-bottom: 20px; }
-        .field label { display: block; margin-bottom: 8px; color: #a0a0b0; }
-        .field input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #4a4a6a;
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0,212,255,0.3);
             background: rgba(255,255,255,0.05);
-            color: #fff;
-            font-size: 1rem;
         }
-        .field input:focus { outline: none; border-color: #00d4ff; }
         
-        .drop-zone {
-            border: 2px dashed #4a4a6a;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: border-color 0.3s;
-        }
-        .drop-zone:hover { border-color: #00d4ff; }
-        
-        .file-info {
-            background: rgba(0,212,255,0.1);
-            padding: 10px 15px;
-            border-radius: 8px;
+        .feature-card .icon {
+            font-size: 2.5rem;
             margin-bottom: 15px;
-            display: none;
         }
-        .file-info.show { display: flex; justify-content: space-between; align-items: center; }
         
-        .upload-btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(90deg, #00d4ff, #7c3aed);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
+        .feature-card h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
         }
-        .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .success-message {
-            display: none;
+        .feature-card p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+        
+        .cta-section {
             text-align: center;
-            padding: 40px;
+            padding: 40px 20px 60px;
         }
-        .success-message.show { display: block; }
-        .success-message h2 { color: #00ff88; margin-bottom: 10px; }
         
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid #00d4ff;
+        .cta-btn {
+            display: inline-block;
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+            border-radius: 50px;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,212,255,0.3);
+        }
+        
+        .cta-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,212,255,0.4);
+        }
+        
+        .how-it-works {
+            max-width: 800px;
+            margin: 0 auto 50px;
+            padding: 0 20px;
+        }
+        
+        .how-it-works h2 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 30px;
+        }
+        
+        .steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.03);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .step-num {
+            background: linear-gradient(135deg, #00d4ff, #7c3aed);
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .upload-progress { display: none; text-align: center; padding: 30px; }
-        .upload-progress.show { display: block; }
+        .step p {
+            color: #cbd5e1;
+            margin: 0;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="hero">
         <h1>🎙️ Turn Your Voice Into a Resume</h1>
-        <p class="subtitle">Record a short audio about your work experience. We'll turn it into a professional resume.</p>
-        
-        <div class="upload-section" id="uploadSection">
-            <div class="field">
-                <label>📧 Your email (for resume delivery)</label>
-                <input type="email" id="email" placeholder="you@example.com">
-            </div>
-            
-            <div class="drop-zone" id="dropZone">
-                <p>📁 Drag & drop audio file here<br><small>or click to browse</small></p>
-            </div>
-            <input type="file" id="fileInput" accept="audio/*" style="display:none">
-            
-            <div class="file-info" id="fileInfo">
-                <span id="fileName"></span>
-                <button onclick="clearFile()" style="background:none;border:none;color:#ff6b6b;cursor:pointer">✕</button>
-            </div>
-            
-            <button class="upload-btn" id="uploadBtn" disabled>Submit Audio</button>
+        <p class="tagline">Record a short audio about your work experience, skills, and job history. We'll transform it into a professional resume that gets results.</p>
+    </div>
+    
+    <div class="features">
+        <div class="feature-card">
+            <div class="icon">🎤</div>
+            <h3>Simple Recording</h3>
+            <p>Just talk! No typing needed. Record 2-5 minutes about your experience.</p>
         </div>
         
-        <div class="upload-progress" id="uploadProgress">
-            <div class="spinner"></div>
-            <p>Uploading...</p>
+        <div class="feature-card">
+            <div class="icon">📄</div>
+            <h3>Professional Resume</h3>
+            <p>We transcribe your audio and format it into a polished, ATS-friendly resume.</p>
         </div>
         
-        <div class="success-message" id="successMessage">
-            <h2>✅ Audio Submitted!</h2>
-            <p>We'll process your resume and email you within 24 hours.</p>
+        <div class="feature-card">
+            <div class="icon">💳</div>
+            <h3>Pay Only If You Love It</h3>
+            <p>You only pay after receiving and reviewing your resume. No upfront fees.</p>
         </div>
     </div>
     
-    <script>
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const uploadSection = document.getElementById('uploadSection');
-        const uploadProgress = document.getElementById('uploadProgress');
-        const successMessage = document.getElementById('successMessage');
-        const emailInput = document.getElementById('email');
-        
-        let selectedFile = null;
-        
-        // Click to browse
-        dropZone.onclick = () => fileInput.click();
-        
-        // File selected
-        fileInput.onchange = () => {
-            if (fileInput.files[0]) handleFile(fileInput.files[0]);
-        };
-        
-        function handleFile(file) {
-            if (!file.type.startsWith('audio/')) {
-                alert('Please upload an audio file');
-                return;
-            }
-            selectedFile = file;
-            fileName.textContent = file.name;
-            fileInfo.classList.add('show');
-            checkReady();
-        }
-        
-        function clearFile() {
-            selectedFile = null;
-            fileInfo.classList.remove('show');
-            fileInput.value = '';
-            checkReady();
-        }
-        
-        function checkReady() {
-            const email = emailInput.value.trim();
-            uploadBtn.disabled = !(selectedFile && email.includes('@'));
-        }
-        
-        emailInput.oninput = checkReady;
-        
-        // Drag and drop
-        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#00d4ff'; };
-        dropZone.ondragleave = () => { dropZone.style.borderColor = '#4a4a6a'; };
-        dropZone.ondrop = (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#4a4a6a';
-            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-        };
-        
-        // Upload
-        uploadBtn.onclick = async () => {
-            if (!selectedFile) return;
-            
-            const email = emailInput.value.trim();
-            if (!email || !email.includes('@')) {
-                alert('Please enter your email');
-                return;
-            }
-            
-            uploadSection.style.display = 'none';
-            uploadProgress.classList.add('show');
-            
-            const reader = new FileReader();
-            reader.onload = async function() {
-                const base64 = reader.result.split(',')[1];
-                
-                try {
-                    const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            email: email,
-                            filename: selectedFile.name,
-                            fileContent: base64,
-                            fileType: selectedFile.type
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        uploadProgress.classList.remove('show');
-                        successMessage.classList.add('show');
-                    } else {
-                        throw new Error(result.error);
-                    }
-                } catch (err) {
-                    alert('Upload failed: ' + err.message);
-                    uploadProgress.classList.remove('show');
-                    uploadSection.style.display = 'block';
-                }
-            };
-            reader.readAsDataURL(selectedFile);
-        };
-    </script>
+    <div class="cta-section">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOz6ASjTBlIFhtyO0tQph6eC0-2y3TfVy20fGsmdvaEyBO7Q/viewform" target="_blank" class="cta-btn">
+            📋 Start Now — It's Free to Submit
+        </a>
+        <p style="color: #64748b; margin-top: 15px; font-size: 0.9rem;">
+            Opens in a new tab • No account required
+        </p>
+    </div>
+    
+    <div class="how-it-works">
+        <h2>How It Works</h2>
+        <div class="steps">
+            <div class="step">
+                <span class="step-num">1</span>
+                <p>Click "Start Now" above</p>
+            </div>
+            <div class="step">
+                <span class="step-num">2</span>
+                <p>Upload your audio recording</p>
+            </div>
+            <div class="step">
+                <span class="step-num">3</span>
+                <p>We create your resume</p>
+            </div>
+            <div class="step">
+                <span class="step-num">4</span>
+                <p>You pay only if you love it</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2026 Audio Resume Service. All rights reserved.</p>
+    </footer>
 </body>
 </html>
