@@ -1,11 +1,5 @@
 // Vercel Serverless - Get file from URL, send to ElevenLabs
 
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -20,11 +14,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { fileUrl, email } = req.body;
+    const { fileUrl, email } = req.body || {};
     const apiKey = process.env.ELEVENLABS_API_KEY;
     
+    console.log('Request body:', req.body);
+    
     if (!apiKey) {
-      return res.status(500).json({ error: 'Server configuration error' });
+      return res.status(500).json({ error: 'Server configuration error - missing API key' });
     }
     
     if (!fileUrl) {
@@ -33,14 +29,14 @@ export default async function handler(req, res) {
 
     console.log('Fetching file from:', fileUrl);
     
-    // Download the file from file.io
+    // Download the file
     const fileResponse = await fetch(fileUrl);
     const arrayBuffer = await fileResponse.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
     
     console.log('File downloaded, size:', fileBuffer.length);
     
-    // Create FormData for ElevenLabs
+    // Send to ElevenLabs
     const formData = new FormData();
     const blob = new Blob([fileBuffer], { type: 'audio/m4a' });
     formData.append('file', blob, 'audio.m4a');
@@ -48,9 +44,7 @@ export default async function handler(req, res) {
 
     const elevenResponse = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
-      headers: {
-        'xi-api-key': apiKey,
-      },
+      headers: { 'xi-api-key': apiKey },
       body: formData,
     });
 
@@ -64,7 +58,7 @@ export default async function handler(req, res) {
     
     res.status(200).json({
       success: true,
-      transcript: result.text || result.content || 'Transcription complete'
+      transcript: result.text || 'Transcription complete'
     });
 
   } catch (error) {
