@@ -5,154 +5,235 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turn Your Voice Into a Professional Resume</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             min-height: 100vh;
             color: #fff;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
             padding: 40px 20px;
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        
+        .container { max-width: 600px; margin: 0 auto; }
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
+            font-size: 2rem;
+            margin-bottom: 10px;
             background: linear-gradient(90deg, #00d4ff, #7c3aed);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        .subtitle { color: #a0a0b0; margin-bottom: 30px; }
         
-        .subtitle {
-            font-size: 1.2rem;
-            color: #a0a0b0;
-        }
-        
-        .form-section {
+        .upload-section {
             background: rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 40px;
+            border-radius: 15px;
+            padding: 30px;
             border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
         }
         
-        .form-link {
-            text-align: center;
+        .field { margin-bottom: 20px; }
+        .field label { display: block; margin-bottom: 8px; color: #a0a0b0; }
+        .field input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #4a4a6a;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 1rem;
+        }
+        .field input:focus { outline: none; border-color: #00d4ff; }
+        
+        .drop-zone {
+            border: 2px dashed #4a4a6a;
+            border-radius: 10px;
             padding: 40px;
-        }
-        
-        .form-link h2 {
+            text-align: center;
+            cursor: pointer;
             margin-bottom: 20px;
-            color: #00d4ff;
+            transition: border-color 0.3s;
         }
+        .drop-zone:hover { border-color: #00d4ff; }
         
-        .form-link p {
-            margin-bottom: 30px;
-            color: #a0a0b0;
+        .file-info {
+            background: rgba(0,212,255,0.1);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
         }
+        .file-info.show { display: flex; justify-content: space-between; align-items: center; }
         
-        .form-btn {
-            display: inline-block;
-            padding: 18px 40px;
+        .upload-btn {
+            width: 100%;
+            padding: 15px;
             background: linear-gradient(90deg, #00d4ff, #7c3aed);
-            border-radius: 12px;
+            border: none;
+            border-radius: 10px;
             color: #fff;
             font-size: 1.1rem;
             font-weight: 600;
-            text-decoration: none;
-            transition: transform 0.2s ease;
+            cursor: pointer;
         }
+        .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .form-btn:hover {
-            transform: translateY(-2px);
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
         }
+        .success-message.show { display: block; }
+        .success-message h2 { color: #00ff88; margin-bottom: 10px; }
         
-        .instructions {
-            margin-top: 40px;
-            text-align: left;
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #00d4ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .instructions h2 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: #00d4ff;
-        }
-        
-        .instructions ol {
-            padding-left: 20px;
-            color: #c0c0d0;
-        }
-        
-        .instructions li {
-            margin-bottom: 10px;
-        }
-        
-        .note {
-            background: rgba(255,165,0,0.1);
-            border: 1px solid orange;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 30px;
-        }
-        
-        .note h3 {
-            color: orange;
-            margin-bottom: 10px;
-        }
-        
-        .note p {
-            color: #ccc;
-            font-size: 0.95rem;
-        }
+        .upload-progress { display: none; text-align: center; padding: 30px; }
+        .upload-progress.show { display: block; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🎙️ Turn Your Voice Into a Resume</h1>
-            <p class="subtitle">Record a short audio about your work experience. We'll turn it into a professional resume.</p>
-        </header>
+        <h1>🎙️ Turn Your Voice Into a Resume</h1>
+        <p class="subtitle">Record a short audio about your work experience. We'll turn it into a professional resume.</p>
         
-        <div class="form-section">
-            <div class="form-link">
-                <h2>📝 Submit Your Audio</h2>
-                <p>Click the button below to open our submission form.<br>Upload your recorded audio and we'll handle the rest!</p>
-                
-                <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOz6ASjTBlIFhtyO0tQph6eC0-2y3TfVy20fGsmdvaEyBO7Q/viewform" target="_blank" class="form-btn">
-                    📋 Open Submission Form
-                </a>
+        <div class="upload-section" id="uploadSection">
+            <div class="field">
+                <label>📧 Your email (for resume delivery)</label>
+                <input type="email" id="email" placeholder="you@example.com">
             </div>
             
-            <div class="note">
-                <h3>⚠️ Important</h3>
-                <p>After you submit your audio, you'll receive an email with your completed resume within 24 hours. Payment is only required if you're satisfied with the result.</p>
+            <div class="drop-zone" id="dropZone">
+                <p>📁 Drag & drop audio file here<br><small>or click to browse</small></p>
             </div>
+            <input type="file" id="fileInput" accept="audio/*" style="display:none">
+            
+            <div class="file-info" id="fileInfo">
+                <span id="fileName"></span>
+                <button onclick="clearFile()" style="background:none;border:none;color:#ff6b6b;cursor:pointer">✕</button>
+            </div>
+            
+            <button class="upload-btn" id="uploadBtn" disabled>Submit Audio</button>
         </div>
         
-        <div class="instructions">
-            <h2>📋 How It Works</h2>
-            <ol>
-                <li>Record yourself talking about your work experience, skills, and job history (1-5 minutes works best)</li>
-                <li>Upload the audio file using our submission form</li>
-                <li>We'll transcribe it and generate a professional resume</li>
-                <li>You'll receive an email with your resume — pay only if you love it!</li>
-            </ol>
+        <div class="upload-progress" id="uploadProgress">
+            <div class="spinner"></div>
+            <p>Uploading...</p>
+        </div>
+        
+        <div class="success-message" id="successMessage">
+            <h2>✅ Audio Submitted!</h2>
+            <p>We'll process your resume and email you within 24 hours.</p>
         </div>
     </div>
+    
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadSection = document.getElementById('uploadSection');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const successMessage = document.getElementById('successMessage');
+        const emailInput = document.getElementById('email');
+        
+        let selectedFile = null;
+        
+        // Click to browse
+        dropZone.onclick = () => fileInput.click();
+        
+        // File selected
+        fileInput.onchange = () => {
+            if (fileInput.files[0]) handleFile(fileInput.files[0]);
+        };
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('audio/')) {
+                alert('Please upload an audio file');
+                return;
+            }
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileInfo.classList.add('show');
+            checkReady();
+        }
+        
+        function clearFile() {
+            selectedFile = null;
+            fileInfo.classList.remove('show');
+            fileInput.value = '';
+            checkReady();
+        }
+        
+        function checkReady() {
+            const email = emailInput.value.trim();
+            uploadBtn.disabled = !(selectedFile && email.includes('@'));
+        }
+        
+        emailInput.oninput = checkReady;
+        
+        // Drag and drop
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#00d4ff'; };
+        dropZone.ondragleave = () => { dropZone.style.borderColor = '#4a4a6a'; };
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#4a4a6a';
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        };
+        
+        // Upload
+        uploadBtn.onclick = async () => {
+            if (!selectedFile) return;
+            
+            const email = emailInput.value.trim();
+            if (!email || !email.includes('@')) {
+                alert('Please enter your email');
+                return;
+            }
+            
+            uploadSection.style.display = 'none';
+            uploadProgress.classList.add('show');
+            
+            const reader = new FileReader();
+            reader.onload = async function() {
+                const base64 = reader.result.split(',')[1];
+                
+                try {
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: email,
+                            filename: selectedFile.name,
+                            fileContent: base64,
+                            fileType: selectedFile.type
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        uploadProgress.classList.remove('show');
+                        successMessage.classList.add('show');
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (err) {
+                    alert('Upload failed: ' + err.message);
+                    uploadProgress.classList.remove('show');
+                    uploadSection.style.display = 'block';
+                }
+            };
+            reader.readAsDataURL(selectedFile);
+        };
+    </script>
 </body>
 </html>
