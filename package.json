@@ -1,9 +1,12 @@
 {
   "name": "audioresume",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vercel dev",
-    "start": "vercel dev"
+    "build": "vercel build"
   },
   "dependencies": {
     "googleapis": "^128.0.0"
