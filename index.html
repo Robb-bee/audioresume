@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Resume from Your Voice</title>
+    <title>Voice to Resume</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,27 +47,31 @@
         }
         .field input:focus { outline: none; border-color: #00d4ff; }
         
-        .drop-zone {
+        .record-btn {
+            width: 100%;
+            padding: 60px;
             border: 2px dashed #333;
             border-radius: 12px;
-            padding: 50px;
             text-align: center;
             cursor: pointer;
             margin-bottom: 20px;
             transition: all 0.3s;
+            background: transparent;
         }
-        .drop-zone:hover, .drop-zone.dragover { border-color: #00d4ff; background: rgba(0,212,255,0.05); }
+        .record-btn:hover, .record-btn.recording {
+            border-color: #ff4444;
+            background: rgba(255,68,68,0.1);
+        }
         
-        .file-info {
-            background: rgba(0,212,255,0.1);
-            padding: 12px 15px;
+        .transcript-box {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
             border-radius: 8px;
-            margin-bottom: 15px;
-            display: none;
-            justify-content: space-between;
-            align-items: center;
+            min-height: 100px;
+            margin-bottom: 20px;
+            color: #aaa;
+            font-style: italic;
         }
-        .file-info.show { display: flex; }
         
         .btn {
             width: 100%;
@@ -79,25 +83,11 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s;
         }
         .btn:hover { transform: scale(1.02); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid #333;
-            border-top: 3px solid #00d4ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn.record { background: linear-gradient(90deg, #ff4444, #ff6666); }
+        .btn.stop { background: #333; }
         
         .resume-preview {
             background: #fff;
@@ -106,11 +96,10 @@
             border-radius: 10px;
             margin-bottom: 20px;
         }
-        .resume-name { font-size: 1.4rem; font-weight: bold; margin-bottom: 5px; }
-        .resume-email { color: #666; font-size: 0.85rem; margin-bottom: 15px; }
+        .resume-name { font-size: 1.4rem; font-weight: bold; }
+        .resume-email { color: #666; font-size: 0.85rem; }
         .resume-section { margin-bottom: 15px; }
-        .resume-section h4 { color: #333; font-size: 0.9rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        .resume-section p { color: #444; font-size: 0.9rem; line-height: 1.5; }
+        .resume-section h4 { color: #333; font-size: 0.9rem; text-transform: uppercase; }
         .skills { display: flex; flex-wrap: wrap; gap: 8px; }
         .skill-tag { background: #e0e0e0; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; }
         
@@ -130,181 +119,149 @@
         <p class="subtitle">Record your work experience. Get a professional resume.</p>
         
         <div class="card">
-            <!-- Step 1: Upload -->
+            <!-- Step 1: Record -->
             <div class="step active" id="step1">
                 <div class="field">
                     <label>📧 Your email</label>
                     <input type="email" id="email" placeholder="you@example.com">
                 </div>
                 
-                <div class="drop-zone" id="dropZone">
-                    <p>🎤 Drop your audio file here<br><small>or click to browse</small></p>
-                </div>
-                <input type="file" id="fileInput" accept="audio/*" style="display:none">
+                <button class="btn record" id="recordBtn">🎤 Tap to Record</button>
                 
-                <div class="file-info" id="fileInfo">
-                    <span id="fileName"></span>
-                    <button onclick="clearFile()" style="background:none;border:none;color:#ff4444;cursor:pointer">✕</button>
+                <div class="transcript-box" id="transcriptBox">
+                    Your transcript will appear here...
                 </div>
                 
-                <button class="btn" id="submitBtn" disabled>Start Processing</button>
+                <button class="btn" id="generateBtn" disabled>Generate Resume</button>
                 <div class="error" id="error1" style="display:none"></div>
             </div>
             
-            <!-- Step 2: Transcribing -->
+            <!-- Step 2: Processing -->
             <div class="step" id="step2">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Transcribing your audio...</p>
-                    <small style="color:#666">This may take a minute</small>
+                <div style="text-align:center;padding:60px 20px">
+                    <div style="width:50px;height:50px;border:3px solid #333;border-top:3px solid #00d4ff;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px"></div>
+                    <p>Creating your resume...</p>
                 </div>
             </div>
             
             <!-- Step 3: Resume Ready -->
             <div class="step" id="step3">
                 <h3 style="margin-bottom:15px">✅ Your Resume is Ready!</h3>
-                
-                <div class="resume-preview" id="resumePreview">
-                    <!-- Filled by JS -->
-                </div>
-                
+                <div class="resume-preview" id="resumePreview"></div>
                 <button class="btn" id="downloadBtn">Download PDF</button>
-                <button class="btn" style="background:#333;margin-top:10px" id="newBtn">Create Another Resume</button>
             </div>
         </div>
     </div>
     
     <script>
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const submitBtn = document.getElementById('submitBtn');
+        const recordBtn = document.getElementById('recordBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const transcriptBox = document.getElementById('transcriptBox');
         const emailInput = document.getElementById('email');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const newBtn = document.getElementById('newBtn');
         
-        let selectedFile = null;
-        let currentResume = null;
+        let recognition = null;
+        let transcript = '';
+        let isRecording = false;
         
-        // File handling
-        dropZone.onclick = () => fileInput.click();
-        fileInput.onchange = () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); };
+        // Check browser support
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
-        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
-        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
-        dropZone.ondrop = (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('dragover');
-            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+        if (!SpeechRecognition) {
+            document.getElementById('error1').textContent = 'Speech recognition not supported in this browser. Try Chrome.';
+            document.getElementById('error1').style.display = 'block';
+            recordBtn.disabled = true;
+        } else {
+            setupRecognition();
+        }
+        
+        function setupRecognition() {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            
+            recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const text = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        transcript += text + ' ';
+                    } else {
+                        interim += text;
+                    }
+                }
+                transcriptBox.innerHTML = transcript + '<span style="color:#666">' + interim + '</span>';
+            };
+            
+            recognition.onend = () => {
+                if (isRecording) {
+                    // Keep recording if still in recording mode
+                    recognition.start();
+                }
+            };
+        }
+        
+        recordBtn.onclick = () => {
+            if (!isRecording) {
+                // Start recording
+                transcript = '';
+                isRecording = true;
+                recordBtn.textContent = '⏹️ Tap to Stop';
+                recordBtn.classList.add('recording');
+                transcriptBox.innerHTML = 'Listening...';
+                try { recognition.start(); } catch(e) { setupRecognition(); recognition.start(); }
+            } else {
+                // Stop recording
+                isRecording = false;
+                recordBtn.textContent = '🎤 Tap to Record';
+                recordBtn.classList.remove('recording');
+                try { recognition.stop(); } catch(e) {}
+                
+                if (transcript.trim()) {
+                    generateBtn.disabled = !emailInput.value.includes('@');
+                }
+            }
         };
         
-        function handleFile(file) {
-            if (!file.type.startsWith('audio/')) {
-                showError('error1', 'Please upload an audio file');
-                return;
-            }
-            selectedFile = file;
-            fileName.textContent = file.name;
-            fileInfo.classList.add('show');
-            checkReady();
-        }
+        emailInput.oninput = () => {
+            generateBtn.disabled = !(transcript.trim() && emailInput.value.includes('@'));
+        };
         
-        function clearFile() {
-            selectedFile = null;
-            fileInfo.classList.remove('show');
-            fileInput.value = '';
-            checkReady();
-        }
-        
-        function checkReady() {
+        generateBtn.onclick = async () => {
             const email = emailInput.value.trim();
-            submitBtn.disabled = !(selectedFile && email.includes('@'));
-        }
-        
-        emailInput.oninput = checkReady;
-        
-        function showError(id, msg) {
-            const el = document.getElementById(id);
-            el.textContent = msg;
-            el.style.display = 'block';
-        }
-        
-        function showStep(n) {
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            document.getElementById('step' + n).classList.add('active');
-        }
-        
-        // Upload flow
-        submitBtn.onclick = async () => {
-            const email = emailInput.value.trim();
-            if (!email || !selectedFile) return;
+            if (!transcript.trim() || !email) return;
             
-            showError('error1', '');
             showStep(2);
             
             try {
-                // Step 1: Get ElevenLabs auth token
-                const authRes = await fetch('/api/auth');
-                const authData = await authRes.json();
-                
-                if (authData.error) throw new Error(authData.error);
-                
-                // Step 2: Upload directly to ElevenLabs
-                const formData = new FormData();
-                formData.append('file', selectedFile);
-                formData.append('model_id', 'scribe_multilingual');
-                
-                const elevenRes = await fetch('https://api.elevenlabs.io/v1/scribe', {
-                    method: 'POST',
-                    headers: { 'xi-api-key': authData.token },
-                    body: formData
-                });
-                
-                if (!elevenRes.ok) {
-                    const err = await elevenRes.text();
-                    throw new Error('Transcription failed: ' + err);
-                }
-                
-                const transcriptData = await elevenRes.json();
-                const transcript = transcriptData.text || '';
-                
-                if (!transcript) throw new Error('No transcript returned');
-                
-                // Step 3: Generate resume (simple format, no AI)
-                const generateRes = await fetch('/api/generate-resume', {
+                // Generate resume (simple parsing, no AI API needed)
+                const res = await fetch('/api/generate-resume', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ transcript, email })
+                    body: JSON.stringify({ transcript: transcript.trim(), email })
                 });
                 
-                const generateData = await generateRes.json();
+                const data = await res.json();
                 
-                if (generateData.error) throw new Error(generateData.error);
+                if (data.error) throw new Error(data.error);
                 
-                currentResume = generateData.resume;
-                
-                // Show preview
-                renderResume(currentResume);
+                renderResume(data.resume);
                 showStep(3);
                 
             } catch (err) {
-                showError('error1', err.message);
+                document.getElementById('error1').textContent = err.message;
+                document.getElementById('error1').style.display = 'block';
                 showStep(1);
             }
         };
         
         function renderResume(resume) {
-            const preview = document.getElementById('resumePreview');
-            preview.innerHTML = `
+            document.getElementById('resumePreview').innerHTML = `
                 <div class="resume-name">${resume.name || 'Your Name'}</div>
                 <div class="resume-email">${resume.email || 'your@email.com'}</div>
-                
                 <div class="resume-section">
                     <h4>Summary</h4>
-                    <p>${resume.summary || 'No summary available'}</p>
+                    <p>${resume.summary || 'No summary'}</p>
                 </div>
-                
                 <div class="resume-section">
                     <h4>Skills</h4>
                     <div class="skills">
@@ -314,39 +271,44 @@
             `;
         }
         
+        function showStep(n) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + n).classList.add('active');
+        }
+        
         // Download PDF
-        downloadBtn.onclick = () => {
+        let currentResume = null;
+        
+        document.getElementById('generateBtn').onclick = async () => {
+            // Store for PDF download
+            const email = emailInput.value.trim();
+            const res = await fetch('/api/generate-resume', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ transcript: transcript.trim(), email })
+            });
+            const data = await res.json();
+            currentResume = data.resume;
+        };
+        
+        document.getElementById('downloadBtn').onclick = () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            
             doc.setFontSize(22);
             doc.text(currentResume.name || 'Resume', 20, 20);
             doc.setFontSize(10);
             doc.setTextColor(100);
             doc.text(currentResume.email || '', 20, 28);
-            
             doc.setFontSize(12);
             doc.setTextColor(0);
             doc.text('Summary', 20, 40);
             doc.setFontSize(10);
             doc.text(doc.splitTextToSize(currentResume.summary || '', 170), 20, 48);
-            
             doc.setFontSize(12);
             doc.text('Skills', 20, 70);
             doc.setFontSize(10);
             doc.text((currentResume.skills || []).join(', '), 20, 78);
-            
             doc.save(`${currentResume.name || 'resume'}.pdf`);
-        };
-        
-        // New resume
-        newBtn.onclick = () => {
-            selectedFile = null;
-            fileInfo.classList.remove('show');
-            fileInput.value = '';
-            emailInput.value = '';
-            checkReady();
-            showStep(1);
         };
     </script>
 </body>
