@@ -128,6 +128,17 @@
                 
                 <button class="btn record" id="recordBtn">🎤 Tap to Record</button>
                 
+                <p style="text-align:center;color:#666;margin:10px 0">— or —</p>
+                
+                <label class="btn" style="display:block;text-align:center;cursor:pointer;background:#333">
+                    📁 Upload Audio File
+                    <input type="file" id="fileInput" accept="audio/*" style="display:none">
+                </label>
+                <div class="file-info" id="fileInfo" style="display:none;background:rgba(0,212,255,0.1);padding:10px;border-radius:8px;margin-top:10px">
+                    <span id="fileName"></span>
+                    <button onclick="clearFile()" style="background:none;border:none;color:#ff4444;cursor:pointer">✕</button>
+                </div>
+                
                 <div class="transcript-box" id="transcriptBox">
                     Your transcript will appear here...
                 </div>
@@ -166,11 +177,34 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const transcriptBox = document.getElementById('transcriptBox');
         const emailInput = document.getElementById('email');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
         
         let recognition = null;
         let transcript = '';
         let isRecording = false;
         let currentResume = null;
+        let uploadedFile = null;
+        
+        // File upload handling
+        fileInput.onchange = () => {
+            if (fileInput.files[0]) {
+                uploadedFile = fileInput.files[0];
+                fileName.textContent = uploadedFile.name;
+                fileInfo.style.display = 'flex';
+                transcript = '';
+                transcriptBox.innerHTML = 'File ready: ' + uploadedFile.name;
+            }
+        };
+        
+        function clearFile() {
+            uploadedFile = null;
+            fileInfo.style.display = 'none';
+            fileInput.value = '';
+        }
+        
+        window.clearFile = clearFile;
         
         // Check browser support
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -209,7 +243,7 @@
         }
         
         function checkReady() {
-            const hasTranscript = transcript.trim().length > 0;
+            const hasTranscript = transcript.trim().length > 0 || uploadedFile;
             const hasEmail = emailInput.value.includes('@');
             generateBtn.disabled = !(hasTranscript && hasEmail);
         }
@@ -235,18 +269,43 @@
         
         generateBtn.onclick = async () => {
             const email = emailInput.value.trim();
-            if (!transcript.trim() || !email) {
-                alert('Please record your voice and enter an email');
+            if (!email) {
+                alert('Please enter an email');
                 return;
             }
             
             showStep(2);
             
             try {
+                let finalTranscript = transcript.trim();
+                
+                // If there's an uploaded file, transcribe it first
+                if (uploadedFile) {
+                    transcriptBox.innerHTML = 'Transcribing uploaded file...';
+                    
+                    const formData = new FormData();
+                    formData.append('file', uploadedFile);
+                    
+                    const transcribeRes = await fetch('/api/transcribe', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const transcribeData = await transcribeRes.json();
+                    
+                    if (transcribeData.error) throw new Error(transcribeData.error);
+                    finalTranscript = transcribeData.text;
+                }
+                
+                if (!finalTranscript) {
+                    throw new Error('No transcript available');
+                }
+                
+                // Generate resume from transcript
                 const res = await fetch('/api/generate-resume', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ transcript: transcript.trim(), email })
+                    body: JSON.stringify({ transcript: finalTranscript, email })
                 });
                 
                 const data = await res.json();
