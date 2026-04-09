@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Downloading Your Resume...</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .container { max-width: 500px; text-align: center; }
+        .loading { padding: 60px 20px; }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
+            border-top: 3px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        h1 { font-size: 1.8rem; margin-bottom: 10px; color: #00ff88; }
+        p { color: #888; }
+        .error {
+            background: rgba(255,0,0,0.1);
+            border: 1px solid #ff4444;
+            padding: 20px;
+            border-radius: 12px;
+            color: #ff6666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="loading">
+            <div class="spinner"></div>
+            <h1>Verifying Payment...</h1>
+            <p>Please wait while we confirm your purchase</p>
+        </div>
+    </div>
+    
+    <script>
+        const { jsPDF } = window.jspdf;
+        
+        async function verifyAndDownload() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get('session_id');
+            
+            if (!sessionId) {
+                showError('Missing session ID');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/verify-payment?session_id=${sessionId}`);
+                const data = await res.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                
+                const resume = data.resume;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(22);
+                doc.text(resume.name || 'Resume', 20, 20);
+                doc.setFontSize(10);
+                doc.setTextColor(100);
+                doc.text(resume.email || '', 20, 28);
+                doc.setFontSize(12);
+                doc.setTextColor(0);
+                doc.text('Professional Summary', 20, 40);
+                doc.setFontSize(10);
+                doc.text(doc.splitTextToSize(resume.summary || '', 170), 20, 48);
+                
+                let y = 70;
+                (resume.experience || []).forEach(exp => {
+                    doc.setFontSize(11);
+                    doc.text(`${exp.title} at ${exp.company}`, 20, y);
+                    doc.setFontSize(9);
+                    doc.setTextColor(100);
+                    doc.text(exp.years || '', 20, y + 5);
+                    y += 15;
+                });
+                
+                doc.save(`${resume.name || 'resume'}.pdf`);
+                
+                document.getElementById('container').innerHTML = `
+                    <div style="font-size:4rem">✅</div>
+                    <h1>Download Started!</h1>
+                    <p>Your resume is being downloaded</p>
+                `;
+                
+            } catch (err) {
+                showError(err.message);
+            }
+        }
+        
+        function showError(msg) {
+            document.getElementById('container').innerHTML = `
+                <div class="error">
+                    <h2>Something went wrong</h2>
+                    <p>${msg}</p>
+                </div>
+            `;
+        }
+        
+        verifyAndDownload();
+    </script>
+</body>
+</html>
