@@ -1,12 +1,15 @@
 // Upload audio file to Google Drive using service account
+// Uses formidable for multipart parsing (works better with Vercel)
 
 import { google } from 'googleapis';
+import formidable from 'formidable';
+import fs from 'fs';
+import path from 'path';
+import { promisify } from 'util';
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
+    bodyParser: false,
   },
 };
 
@@ -26,7 +29,6 @@ export default async function handler(req, res) {
   try {
     const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-    const { email } = req.body || {};
 
     if (!serviceAccountJson) {
       return res.status(500).json({ error: 'Server configuration error - missing service account' });
@@ -44,12 +46,24 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Invalid service account JSON' });
     }
 
-    // Get the file from form
-    const file = req.body.file;
+    // Parse multipart form data with formidable
+    const parseForm = promisify(formidable({ 
+      multiples: true,
+      maxFileSize: 10 * 1024 * 1024,
+    }).parse);
+
+    const { fields, files } = await parseForm(req);
     
-    if (!file || !file.data) {
+    const file = files.file;
+    const email = fields.email ? fields.email[0] : '';
+    
+    if (!file || !file[0]) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
+
+    const uploadedFile = file[0];
+    const filePath = uploadedFile.filepath;
+    const fileMimeType = uploadedFile.mimetype || 'audio/mpeg';
 
     const auth = new google.auth.GoogleAuth({
       credentials,
@@ -60,25 +74,28 @@ export default async function handler(req, res) {
 
     // Generate filename: email_timestamp.ext
     const timestamp = Date.now();
-    const ext = file.mimetype.includes('m4a') ? 'm4a' : 
-                file.mimetype.includes('mp3') ? 'mp3' : 
-                file.mimetype.includes('webm') ? 'webm' : 'audio';
+    const ext = path.extname(uploadedFile.originalFilename || 'audio').slice(1) || 'audio';
     const filename = email ? `${email}_${timestamp}.${ext}` : `audio_${timestamp}.${ext}`;
 
-    // Upload to Drive
+    // Read file and upload to Drive
+    const fileContent = fs.createReadStream(filePath);
+
     const response = await drive.files.create({
       requestBody: {
         name: filename,
         parents: [folderId],
       },
       media: {
-        mimeType: file.mimetype,
-        body: Buffer.from(file.data, 'base64'),
+        mimeType: fileMimeType,
+        body: fileContent,
       },
       fields: 'id, name',
     });
 
     console.log('File uploaded:', response.data.id, response.data.name);
+
+    // Clean up temp file
+    fs.unlinkSync(filePath);
 
     res.status(200).json({
       success: true,
