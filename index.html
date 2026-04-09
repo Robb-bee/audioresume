@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turn Your Voice Into a Professional Resume</title>
+    <title>Professional Resume from Your Voice</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
             min-height: 100vh;
             color: #fff;
             padding: 40px 20px;
@@ -21,22 +22,25 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .subtitle { color: #a0a0b0; margin-bottom: 30px; }
+        .subtitle { color: #888; margin-bottom: 30px; }
         
-        .upload-section {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
+        .card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
             padding: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.08);
         }
         
+        .step { display: none; }
+        .step.active { display: block; }
+        
         .field { margin-bottom: 20px; }
-        .field label { display: block; margin-bottom: 8px; color: #a0a0b0; }
+        .field label { display: block; margin-bottom: 8px; color: #aaa; font-size: 0.9rem; }
         .field input {
             width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #4a4a6a;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #333;
             background: rgba(255,255,255,0.05);
             color: #fff;
             font-size: 1rem;
@@ -44,28 +48,30 @@
         .field input:focus { outline: none; border-color: #00d4ff; }
         
         .drop-zone {
-            border: 2px dashed #4a4a6a;
-            border-radius: 10px;
-            padding: 40px;
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 50px;
             text-align: center;
             cursor: pointer;
             margin-bottom: 20px;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
-        .drop-zone:hover { border-color: #00d4ff; }
+        .drop-zone:hover, .drop-zone.dragover { border-color: #00d4ff; background: rgba(0,212,255,0.05); }
         
         .file-info {
             background: rgba(0,212,255,0.1);
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-radius: 8px;
             margin-bottom: 15px;
             display: none;
+            justify-content: space-between;
+            align-items: center;
         }
-        .file-info.show { display: flex; justify-content: space-between; align-items: center; }
+        .file-info.show { display: flex; }
         
-        .upload-btn {
+        .btn {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             background: linear-gradient(90deg, #00d4ff, #7c3aed);
             border: none;
             border-radius: 10px;
@@ -73,64 +79,98 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
+            transition: transform 0.2s;
         }
-        .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn:hover { transform: scale(1.02); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         
-        .success-message {
-            display: none;
+        .loading {
             text-align: center;
-            padding: 40px;
+            padding: 60px 20px;
         }
-        .success-message.show { display: block; }
-        .success-message h2 { color: #00ff88; margin-bottom: 10px; }
-        
         .spinner {
-            border: 3px solid rgba(255,255,255,0.1);
+            width: 50px;
+            height: 50px;
+            border: 3px solid #333;
             border-top: 3px solid #00d4ff;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
+            margin: 0 auto 20px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
         
-        .upload-progress { display: none; text-align: center; padding: 30px; }
-        .upload-progress.show { display: block; }
+        .resume-preview {
+            background: #fff;
+            color: #000;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .resume-name { font-size: 1.4rem; font-weight: bold; margin-bottom: 5px; }
+        .resume-email { color: #666; font-size: 0.85rem; margin-bottom: 15px; }
+        .resume-section { margin-bottom: 15px; }
+        .resume-section h4 { color: #333; font-size: 0.9rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .resume-section p { color: #444; font-size: 0.9rem; line-height: 1.5; }
+        .skills { display: flex; flex-wrap: wrap; gap: 8px; }
+        .skill-tag { background: #e0e0e0; padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; }
+        
+        .error {
+            background: rgba(255,0,0,0.1);
+            border: 1px solid #ff4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: #ff6666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎙️ Turn Your Voice Into a Resume</h1>
-        <p class="subtitle">Record a short audio about your work experience. We'll turn it into a professional resume.</p>
+        <h1>🎙️ Voice to Resume</h1>
+        <p class="subtitle">Record your work experience. Get a professional resume.</p>
         
-        <div class="upload-section" id="uploadSection">
-            <div class="field">
-                <label>📧 Your email (for resume delivery)</label>
-                <input type="email" id="email" placeholder="you@example.com">
+        <div class="card">
+            <!-- Step 1: Upload -->
+            <div class="step active" id="step1">
+                <div class="field">
+                    <label>📧 Your email</label>
+                    <input type="email" id="email" placeholder="you@example.com">
+                </div>
+                
+                <div class="drop-zone" id="dropZone">
+                    <p>🎤 Drop your audio file here<br><small>or click to browse</small></p>
+                </div>
+                <input type="file" id="fileInput" accept="audio/*" style="display:none">
+                
+                <div class="file-info" id="fileInfo">
+                    <span id="fileName"></span>
+                    <button onclick="clearFile()" style="background:none;border:none;color:#ff4444;cursor:pointer">✕</button>
+                </div>
+                
+                <button class="btn" id="submitBtn" disabled>Start Processing</button>
+                <div class="error" id="error1" style="display:none"></div>
             </div>
             
-            <div class="drop-zone" id="dropZone">
-                <p>📁 Drag & drop audio file here<br><small>or click to browse</small></p>
+            <!-- Step 2: Transcribing -->
+            <div class="step" id="step2">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Transcribing your audio...</p>
+                    <small style="color:#666">This may take a minute</small>
+                </div>
             </div>
-            <input type="file" id="fileInput" accept="audio/*" style="display:none">
             
-            <div class="file-info" id="fileInfo">
-                <span id="fileName"></span>
-                <button onclick="clearFile()" style="background:none;border:none;color:#ff6b6b;cursor:pointer">✕</button>
+            <!-- Step 3: Resume Ready -->
+            <div class="step" id="step3">
+                <h3 style="margin-bottom:15px">✅ Your Resume is Ready!</h3>
+                
+                <div class="resume-preview" id="resumePreview">
+                    <!-- Filled by JS -->
+                </div>
+                
+                <button class="btn" id="downloadBtn">Download PDF</button>
+                <button class="btn" style="background:#333;margin-top:10px" id="newBtn">Create Another Resume</button>
             </div>
-            
-            <button class="upload-btn" id="uploadBtn" disabled>Submit Audio</button>
-        </div>
-        
-        <div class="upload-progress" id="uploadProgress">
-            <div class="spinner"></div>
-            <p>Uploading...</p>
-        </div>
-        
-        <div class="success-message" id="successMessage">
-            <h2>✅ Audio Submitted!</h2>
-            <p>Your audio has been received. We'll email your resume shortly.</p>
         </div>
     </div>
     
@@ -139,23 +179,29 @@
         const fileInput = document.getElementById('fileInput');
         const fileInfo = document.getElementById('fileInfo');
         const fileName = document.getElementById('fileName');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const uploadSection = document.getElementById('uploadSection');
-        const uploadProgress = document.getElementById('uploadProgress');
-        const successMessage = document.getElementById('successMessage');
+        const submitBtn = document.getElementById('submitBtn');
         const emailInput = document.getElementById('email');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const newBtn = document.getElementById('newBtn');
         
         let selectedFile = null;
+        let currentResume = null;
         
+        // File handling
         dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); };
         
-        fileInput.onchange = () => {
-            if (fileInput.files[0]) handleFile(fileInput.files[0]);
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
         };
         
         function handleFile(file) {
             if (!file.type.startsWith('audio/')) {
-                alert('Please upload an audio file');
+                showError('error1', 'Please upload an audio file');
                 return;
             }
             selectedFile = file;
@@ -173,54 +219,134 @@
         
         function checkReady() {
             const email = emailInput.value.trim();
-            uploadBtn.disabled = !(selectedFile && email.includes('@'));
+            submitBtn.disabled = !(selectedFile && email.includes('@'));
         }
         
         emailInput.oninput = checkReady;
         
-        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#00d4ff'; };
-        dropZone.ondragleave = () => { dropZone.style.borderColor = '#4a4a6a'; };
-        dropZone.ondrop = (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = '#4a4a6a';
-            if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
-        };
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
         
-        uploadBtn.onclick = async () => {
-            if (!selectedFile) return;
-            
+        function showStep(n) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + n).classList.add('active');
+        }
+        
+        // Upload flow
+        submitBtn.onclick = async () => {
             const email = emailInput.value.trim();
-            if (!email || !email.includes('@')) {
-                alert('Please enter your email');
-                return;
-            }
+            if (!email || !selectedFile) return;
             
-            uploadSection.style.display = 'none';
-            uploadProgress.classList.add('show');
+            showError('error1', '');
+            showStep(2);
             
             try {
+                // Step 1: Get ElevenLabs auth token
+                const authRes = await fetch('/api/auth');
+                const authData = await authRes.json();
+                
+                if (authData.error) throw new Error(authData.error);
+                
+                // Step 2: Upload directly to ElevenLabs
                 const formData = new FormData();
                 formData.append('file', selectedFile);
-                formData.append('email', email);
+                formData.append('model_id', 'scribe_multilingual');
                 
-                const response = await fetch('/api/upload-to-drive', {
+                const elevenRes = await fetch('https://api.eleven-labs.com/v1/scribe', {
                     method: 'POST',
+                    headers: { 'xi-api-key': authData.token },
                     body: formData
                 });
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    uploadProgress.classList.remove('show');
-                    successMessage.classList.add('show');
-                } else {
-                    throw new Error(result.error || 'Upload failed');
+                if (!elevenRes.ok) {
+                    const err = await elevenRes.text();
+                    throw new Error('Transcription failed: ' + err);
                 }
+                
+                const transcriptData = await elevenRes.json();
+                const transcript = transcriptData.text || '';
+                
+                if (!transcript) throw new Error('No transcript returned');
+                
+                // Step 3: Generate resume (simple format, no AI)
+                const generateRes = await fetch('/api/generate-resume', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcript, email })
+                });
+                
+                const generateData = await generateRes.json();
+                
+                if (generateData.error) throw new Error(generateData.error);
+                
+                currentResume = generateData.resume;
+                
+                // Show preview
+                renderResume(currentResume);
+                showStep(3);
+                
             } catch (err) {
-                alert('Upload failed: ' + err.message);
-                uploadProgress.classList.remove('show');
-                uploadSection.style.display = 'block';
+                showError('error1', err.message);
+                showStep(1);
             }
+        };
+        
+        function renderResume(resume) {
+            const preview = document.getElementById('resumePreview');
+            preview.innerHTML = `
+                <div class="resume-name">${resume.name || 'Your Name'}</div>
+                <div class="resume-email">${resume.email || 'your@email.com'}</div>
+                
+                <div class="resume-section">
+                    <h4>Summary</h4>
+                    <p>${resume.summary || 'No summary available'}</p>
+                </div>
+                
+                <div class="resume-section">
+                    <h4>Skills</h4>
+                    <div class="skills">
+                        ${(resume.skills || []).map(s => `<span class="skill-tag">${s}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Download PDF
+        downloadBtn.onclick = () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(22);
+            doc.text(currentResume.name || 'Resume', 20, 20);
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(currentResume.email || '', 20, 28);
+            
+            doc.setFontSize(12);
+            doc.setTextColor(0);
+            doc.text('Summary', 20, 40);
+            doc.setFontSize(10);
+            doc.text(doc.splitTextToSize(currentResume.summary || '', 170), 20, 48);
+            
+            doc.setFontSize(12);
+            doc.text('Skills', 20, 70);
+            doc.setFontSize(10);
+            doc.text((currentResume.skills || []).join(', '), 20, 78);
+            
+            doc.save(`${currentResume.name || 'resume'}.pdf`);
+        };
+        
+        // New resume
+        newBtn.onclick = () => {
+            selectedFile = null;
+            fileInfo.classList.remove('show');
+            fileInput.value = '';
+            emailInput.value = '';
+            checkReady();
+            showStep(1);
         };
     </script>
 </body>
