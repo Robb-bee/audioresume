@@ -183,6 +183,15 @@
             recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+            
+            // Keep recording going longer
+            recognition.onend = () => {
+                if (isRecording) {
+                    // Restart if still in recording mode
+                    try { recognition.start(); } catch(e) {}
+                }
+            };
             
             recognition.onresult = (event) => {
                 let interim = '';
@@ -226,7 +235,10 @@
         
         generateBtn.onclick = async () => {
             const email = emailInput.value.trim();
-            if (!transcript.trim() || !email) return;
+            if (!transcript.trim() || !email) {
+                alert('Please record your voice and enter an email');
+                return;
+            }
             
             showStep(2);
             
