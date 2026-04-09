@@ -255,7 +255,7 @@
                 formData.append('file', selectedFile);
                 formData.append('model_id', 'scribe_multilingual');
                 
-                const elevenRes = await fetch('https://api.eleven-labs.com/v1/scribe', {
+                const elevenRes = await fetch('https://api.elevenlabs.io/v1/scribe', {
                     method: 'POST',
                     headers: { 'xi-api-key': authData.token },
                     body: formData
