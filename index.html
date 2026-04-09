@@ -130,7 +130,7 @@
         
         <div class="success-message" id="successMessage">
             <h2>✅ Audio Submitted!</h2>
-            <p>We'll process your resume and email you within 24 hours.</p>
+            <p>Your audio has been received. We'll email your resume shortly.</p>
         </div>
     </div>
     
@@ -147,10 +147,8 @@
         
         let selectedFile = null;
         
-        // Click to browse
         dropZone.onclick = () => fileInput.click();
         
-        // File selected
         fileInput.onchange = () => {
             if (fileInput.files[0]) handleFile(fileInput.files[0]);
         };
@@ -180,7 +178,6 @@
         
         emailInput.oninput = checkReady;
         
-        // Drag and drop
         dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = '#00d4ff'; };
         dropZone.ondragleave = () => { dropZone.style.borderColor = '#4a4a6a'; };
         dropZone.ondrop = (e) => {
@@ -189,7 +186,6 @@
             if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
         };
         
-        // Upload - to Google Drive via service account
         uploadBtn.onclick = async () => {
             if (!selectedFile) return;
             
@@ -201,7 +197,6 @@
             
             uploadSection.style.display = 'none';
             uploadProgress.classList.add('show');
-            uploadProgress.querySelector('p').textContent = 'Uploading audio...';
             
             try {
                 const formData = new FormData();
@@ -220,24 +215,6 @@
                     successMessage.classList.add('show');
                 } else {
                     throw new Error(result.error || 'Upload failed');
-                }
-            } catch (err) {
-                alert('Upload failed: ' + err.message);
-                uploadProgress.classList.remove('show');
-                uploadSection.style.display = 'block';
-            }
-        };
-                    })
-                });
-                
-                const result = await transcribeResponse.json();
-                
-                if (result.success) {
-                    uploadProgress.classList.remove('show');
-                    successMessage.classList.add('show');
-                    console.log('Transcript:', result.transcript);
-                } else {
-                    throw new Error(result.error || 'Transcription failed');
                 }
             } catch (err) {
                 alert('Upload failed: ' + err.message);
