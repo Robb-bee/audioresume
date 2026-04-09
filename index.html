@@ -83,11 +83,11 @@
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
+            margin-bottom: 10px;
         }
         .btn:hover { transform: scale(1.02); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn.record { background: linear-gradient(90deg, #ff4444, #ff6666); }
-        .btn.stop { background: #333; }
         
         .resume-preview {
             background: #fff;
@@ -153,28 +153,33 @@
         </div>
     </div>
     
+    <footer style="text-align:center;margin-top:40px;padding:20px;color:#666;font-size:0.85rem">
+        <p style="margin-bottom:10px">
+            <a href="/terms.html" style="color:#888;text-decoration:none;margin:0 10px">Terms of Service</a>
+            <a href="/privacy.html" style="color:#888;text-decoration:none;margin:0 10px">Privacy Policy</a>
+        </p>
+    </footer>
+    
     <script>
         const recordBtn = document.getElementById('recordBtn');
         const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
         const transcriptBox = document.getElementById('transcriptBox');
         const emailInput = document.getElementById('email');
         
         let recognition = null;
         let transcript = '';
         let isRecording = false;
+        let currentResume = null;
         
         // Check browser support
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
         if (!SpeechRecognition) {
-            document.getElementById('error1').textContent = 'Speech recognition not supported in this browser. Try Chrome.';
+            document.getElementById('error1').textContent = 'Speech recognition not supported. Try Chrome.';
             document.getElementById('error1').style.display = 'block';
             recordBtn.disabled = true;
         } else {
-            setupRecognition();
-        }
-        
-        function setupRecognition() {
             recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
@@ -190,41 +195,34 @@
                     }
                 }
                 transcriptBox.innerHTML = transcript + '<span style="color:#666">' + interim + '</span>';
+                checkReady();
             };
-            
-            recognition.onend = () => {
-                if (isRecording) {
-                    // Keep recording if still in recording mode
-                    recognition.start();
-                }
-            };
+        }
+        
+        function checkReady() {
+            const hasTranscript = transcript.trim().length > 0;
+            const hasEmail = emailInput.value.includes('@');
+            generateBtn.disabled = !(hasTranscript && hasEmail);
         }
         
         recordBtn.onclick = () => {
             if (!isRecording) {
-                // Start recording
                 transcript = '';
                 isRecording = true;
                 recordBtn.textContent = '⏹️ Tap to Stop';
                 recordBtn.classList.add('recording');
                 transcriptBox.innerHTML = 'Listening...';
-                try { recognition.start(); } catch(e) { setupRecognition(); recognition.start(); }
+                try { recognition.start(); } catch(e) { recognition.start(); }
             } else {
-                // Stop recording
                 isRecording = false;
                 recordBtn.textContent = '🎤 Tap to Record';
                 recordBtn.classList.remove('recording');
                 try { recognition.stop(); } catch(e) {}
-                
-                if (transcript.trim()) {
-                    generateBtn.disabled = !emailInput.value.includes('@');
-                }
+                checkReady();
             }
         };
         
-        emailInput.oninput = () => {
-            generateBtn.disabled = !(transcript.trim() && emailInput.value.includes('@'));
-        };
+        emailInput.oninput = checkReady;
         
         generateBtn.onclick = async () => {
             const email = emailInput.value.trim();
@@ -233,7 +231,6 @@
             showStep(2);
             
             try {
-                // Generate resume (simple parsing, no AI API needed)
                 const res = await fetch('/api/generate-resume', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -244,7 +241,8 @@
                 
                 if (data.error) throw new Error(data.error);
                 
-                renderResume(data.resume);
+                currentResume = data.resume;
+                renderResume(currentResume);
                 showStep(3);
                 
             } catch (err) {
@@ -276,22 +274,7 @@
             document.getElementById('step' + n).classList.add('active');
         }
         
-        // Download PDF
-        let currentResume = null;
-        
-        document.getElementById('generateBtn').onclick = async () => {
-            // Store for PDF download
-            const email = emailInput.value.trim();
-            const res = await fetch('/api/generate-resume', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ transcript: transcript.trim(), email })
-            });
-            const data = await res.json();
-            currentResume = data.resume;
-        };
-        
-        document.getElementById('downloadBtn').onclick = () => {
+        downloadBtn.onclick = () => {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             doc.setFontSize(22);
@@ -311,12 +294,5 @@
             doc.save(`${currentResume.name || 'resume'}.pdf`);
         };
     </script>
-    
-    <footer style="text-align:center;margin-top:40px;padding:20px;color:#666;font-size:0.85rem">
-        <p style="margin-bottom:10px">
-            <a href="/terms.html" style="color:#888;text-decoration:none;margin:0 10px">Terms of Service</a>
-            <a href="/privacy.html" style="color:#888;text-decoration:none;margin:0 10px">Privacy Policy</a>
-        </p>
-    </footer>
 </body>
 </html>
