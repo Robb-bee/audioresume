@@ -1,11 +1,11 @@
 {
   "framework": null,
   "functions": {
-    "api/transcribe.js": { "runtime": "nodejs@18" },
-    "api/generate-resume.js": { "runtime": "nodejs@18" },
-    "api/upload-to-drive.js": { "runtime": "nodejs@18" },
-    "api/auth.js": { "runtime": "nodejs@18" },
-    "api/test.js": { "runtime": "nodejs@18" }
+    "api/transcribe.js": { "runtime": "nodejs" },
+    "api/generate-resume.js": { "runtime": "nodejs" },
+    "api/upload-to-drive.js": { "runtime": "nodejs" },
+    "api/auth.js": { "runtime": "nodejs" },
+    "api/test.js": { "runtime": "nodejs" }
   },
   "routes": [
     {

@@ -1,4 +1,4 @@
-export const config = { runtime: 'nodejs@18' };
+export const config = { runtime: 'nodejs' };
 // Simple upload to Drive
 import { google } from 'googleapis';
 import Busboy from 'busboy';
