@@ -1,5 +1,8 @@
-export const config = { runtime: 'nodejs18.x' };
 // POST /api/transcribe - Transcribe audio using OpenAI Whisper
+import fetch from 'node-fetch';
+
+export const config = { runtime: 'nodejs18.x' };
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -12,43 +15,35 @@ export default async function handler(req, res) {
     const apiKey = process.env.OPENAI_API_KEY;
     
     if (!apiKey) {
-      return res.status(500).json({ error: 'Server configuration error' });
+      return res.status(500).json({ error: 'Server configuration error: Missing API key' });
     }
 
-    // Get the audio file from form data
-    const formData = await req.formData();
-    const file = formData.get('file');
+    // Get JSON body
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const { audio, filename } = body;
     
-    if (!file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+    if (!audio) {
+      return res.status(400).json({ error: 'No audio file provided' });
     }
 
-    // Convert to base64 for OpenAI API
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64 = buffer.toString('base64');
+    // Convert base64 to buffer
+    const buffer = Buffer.from(audio, 'base64');
     
-    // Call OpenAI Whisper API
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'whisper-1',
-        response_format: 'json'
-      })
-    });
-
-    // Build multipart manually since we're in edge runtime
+    // Create multipart form data manually
     const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
-    const body = `--${boundary}\r\n` +
-      `Content-Disposition: form-data; name="file"; filename="${file.name}"\r\n` +
-      `Content-Type: ${file.type || 'audio/mpeg'}\r\n\r\n` +
-      buffer.toString('binary') +
-      `\r\n--${boundary}\r\n` +
-      `Content-Disposition: form-data; name="model"\r\n\r\nwhisper-1\r\n` +
-      `--${boundary}--\r\n`;
+    
+    const fileName = filename || 'audio.m4a';
+    const contentType = fileName.endsWith('.m4a') ? 'audio/mp4' : 'audio/mpeg';
+    
+    const formBody = Buffer.concat([
+      Buffer.from(`--${boundary}\r\n`),
+      Buffer.from(`Content-Disposition: form-data; name="file"; filename="${fileName}"\r\n`),
+      Buffer.from(`Content-Type: ${contentType}\r\n\r\n`),
+      buffer,
+      Buffer.from(`\r\n--${boundary}\r\n`),
+      Buffer.from('Content-Disposition: form-data; name="model"\r\n\r\nwhisper-1\r\n'),
+      Buffer.from(`--${boundary}--\r\n`)
+    ]);
 
     const openAIResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
@@ -56,11 +51,12 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': `multipart/form-data; boundary=${boundary}`
       },
-      body: buffer
+      body: formBody
     });
 
     if (!openAIResponse.ok) {
       const err = await openAIResponse.text();
+      console.error('OpenAI error:', err);
       throw new Error('Transcription failed: ' + err);
     }
 
