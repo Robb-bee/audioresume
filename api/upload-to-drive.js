@@ -1,9 +1,7 @@
-export const config = { runtime: 'nodejs' };
 // Simple upload to Drive
 import { google } from 'googleapis';
 import Busboy from 'busboy';
 
-export const config = { api: { bodyParser: false } };
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
