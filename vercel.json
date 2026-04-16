@@ -1,9 +1,11 @@
 {
   "framework": null,
   "functions": {
-    "api/*.js": {
-      "runtime": "nodejs18.x"
-    }
+    "api/transcribe.js": { "runtime": "nodejs18.x" },
+    "api/generate-resume.js": { "runtime": "nodejs18.x" },
+    "api/upload-to-drive.js": { "runtime": "nodejs18.x" },
+    "api/auth.js": { "runtime": "nodejs18.x" },
+    "api/test.js": { "runtime": "nodejs18.x" }
   },
   "routes": [
     {
