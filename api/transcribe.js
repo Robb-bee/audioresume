@@ -1,3 +1,4 @@
+export const config = { runtime: "nodejs@18.0.0" };
 // POST /api/transcribe - Simple test endpoint
 
 export default async function handler(req, res) {

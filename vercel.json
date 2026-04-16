@@ -1,12 +1,5 @@
 {
   "framework": null,
-  "functions": {
-    "api/transcribe.js": { "runtime": "nodejs" },
-    "api/generate-resume.js": { "runtime": "nodejs" },
-    "api/upload-to-drive.js": { "runtime": "nodejs" },
-    "api/auth.js": { "runtime": "nodejs" },
-    "api/test.js": { "runtime": "nodejs" }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
