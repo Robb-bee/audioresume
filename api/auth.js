@@ -1,5 +1,4 @@
-export const config = { runtime: "nodejs@18.0.0" };
-// GET /api/auth - Returns ElevenLabs token
+// GET /api/auth - Returns ElevenLabs API key
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -15,10 +14,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    res.json({ 
-      token: apiKey,
-      expiresIn: 3600
-    });
+    res.json({ apiKey });
 
   } catch (error) {
     console.error('Auth error:', error.message);

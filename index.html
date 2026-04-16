@@ -279,28 +279,31 @@
             try {
                 let finalTranscript = transcript.trim();
                 
-                // If there's an uploaded file, transcribe it first
+                // If there's an uploaded file, transcribe it directly via ElevenLabs
                 if (uploadedFile) {
                     transcriptBox.innerHTML = 'Transcribing uploaded file...';
                     
-                    // Convert file to base64
-                    const reader = new FileReader();
-                    const base64Promise = new Promise((resolve) => {
-                        reader.onload = () => resolve(reader.result.split(',')[1]);
-                        reader.readAsDataURL(uploadedFile);
-                    });
-                    const audioBase64 = await base64Promise;
+                    // Get ElevenLabs API key from our backend
+                    const { apiKey } = await fetch('/api/auth').then(r => r.json());
                     
-                    const transcribeRes = await fetch('/api/transcribe', {
+                    // Upload directly to ElevenLabs - NOT through Vercel
+                    const formData = new FormData();
+                    formData.append('file', uploadedFile);
+                    formData.append('model_id', 'scribe_v1');
+                    
+                    const elevenRes = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ audio: audioBase64, filename: uploadedFile.name })
+                        headers: { 'xi-api-key': apiKey },
+                        body: formData
                     });
                     
-                    const transcribeData = await transcribeRes.json();
+                    if (!elevenRes.ok) {
+                        const err = await elevenRes.text();
+                        throw new Error('ElevenLabs error: ' + err);
+                    }
                     
-                    if (transcribeData.error) throw new Error(transcribeData.error);
-                    finalTranscript = transcribeData.text;
+                    const result = await elevenRes.json();
+                    finalTranscript = result.text;
                 }
                 
                 if (!finalTranscript) {
