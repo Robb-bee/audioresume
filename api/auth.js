@@ -1,4 +1,4 @@
-export const config = { runtime: 'nodejs' };
+export const config = { runtime: 'nodejs18.x' };
 // GET /api/auth - Returns ElevenLabs token
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

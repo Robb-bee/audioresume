@@ -1,4 +1,4 @@
-export const config = { runtime: 'nodejs' };
+export const config = { runtime: 'nodejs18.x' };
 // Test endpoint
 export default async function handler(req, res) {
   res.status(200).json({ success: true, message: 'API is working' });
