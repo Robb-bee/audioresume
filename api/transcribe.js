@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // POST /api/transcribe - Transcribe audio using OpenAI Whisper
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // POST /api/generate-resume - Creates resume from transcript
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 // Simple upload to Drive
 import { google } from 'googleapis';
 import Busboy from 'busboy';
