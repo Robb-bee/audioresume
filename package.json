@@ -1,5 +1,11 @@
 {
   "name": "audioresume",
   "version": "1.0.0",
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "build": "echo 'No build needed'"
+  },
+  "dependencies": {
+    "googleapis": "^123.0.0"
+  }
 }

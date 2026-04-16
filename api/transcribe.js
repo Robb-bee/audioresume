@@ -1,6 +1,4 @@
 // POST /api/transcribe - Transcribe audio using OpenAI Whisper
-import fetch from 'node-fetch';
-
 export const config = { runtime: 'nodejs18.x' };
 
 export default async function handler(req, res) {
@@ -19,8 +17,12 @@ export default async function handler(req, res) {
     }
 
     // Get JSON body
-    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { audio, filename } = body;
+    let body = '';
+    for await (const chunk of req.body) {
+      body += chunk;
+    }
+    const parsed = JSON.parse(body);
+    const { audio, filename } = parsed;
     
     if (!audio) {
       return res.status(400).json({ error: 'No audio file provided' });
